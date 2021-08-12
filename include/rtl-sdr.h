@@ -670,6 +670,9 @@ RTLSDR_API int rtlsdr_set_opt_string(rtlsdr_dev_t *dev, const char *opts, int ve
 RTLSDR_API const char * rtlsdr_get_opt_help(int longInfo);
 
 
+
+
+
 /*!
  * Exposes/permits hacking of Tuner-specific I2C registers: set register once
  *
@@ -696,6 +699,17 @@ RTLSDR_API int rtlsdr_get_tuner_i2c_register(rtlsdr_dev_t *dev, unsigned char* d
  */
 RTLSDR_API int rtlsdr_set_tuner_i2c_override(rtlsdr_dev_t *dev, unsigned i2c_register, unsigned mask, unsigned data);
 
+/*!
+* Exposes Custom Functions for manual control over R820T Settings
+*
+*
+*/
+RTLSDR_API int rtlsdr_tuner_set_freq_only(rtlsdr_dev_t *dev,  uint64_t freq );
+RTLSDR_API int rtlsdr_tuner_set_open_drain(rtlsdr_dev_t *dev, uint8_t open_d );
+RTLSDR_API int rtlsdr_tuner_RF_filt_band(rtlsdr_dev_t *dev, uint8_t band );
+RTLSDR_API int rtlsdr_tuner_TF_switch(rtlsdr_dev_t *dev, uint8_t sw );
+RTLSDR_API int rtlsdr_tuner_TF_LPF(rtlsdr_dev_t *dev, uint8_t band );
+RTLSDR_API int rtlsdr_tuner_TF_Notch(rtlsdr_dev_t *dev, uint8_t band );
 
 /*!
  * request version id string to identify source and date of library

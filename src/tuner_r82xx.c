@@ -702,27 +702,115 @@ static void print_registers(struct r82xx_priv *priv)
 	printf("\n");
 }
 
-/*
- * r82xx tuning logic
- */
 
-static int r82xx_set_mux(struct r82xx_priv *priv, uint64_t freq)
-{
-	const struct r82xx_freq_range *range;
+// ############### CUSTOM SETTINGS ################
+
+int r82xx_set_open_drain(struct r82xx_priv *priv, uint8_t open_d ){
+	/* Open Drain */
 	int rc;
-	unsigned int i;
-	uint8_t val;
+	rc = -1;
+	if (open_d > 0)
+		rc = r82xx_write_reg_mask(priv, 0x17, 0x08, 0x08);
+	else
+		rc = r82xx_write_reg_mask(priv, 0x17, 0x00, 0x08);
+	return rc;
+}
 
+int r82xx_RF_filt_band(struct r82xx_priv *priv, uint8_t band){
+	/* Set the RF Filter Band */
+	/* 0 - LOW    : 0 -> 310MHz ??? */
+	/* 1 - MEDIUM :  */
+	/* 2 - HIGH   :  */
+	int rc;
+	rc = 0;
+	switch(band){
+		case 0:
+			rc = r82xx_write_reg_mask(priv, 0x1a, 0b10, 0x03);
+			break;
+		case 1:
+			rc = r82xx_write_reg_mask(priv, 0x1a, 0b01, 0x03);
+			break;
+		case 2:
+			rc = r82xx_write_reg_mask(priv, 0x1a, 0b00, 0x03);
+			break;
+		default:
+			rc = -1;
+			break;
+	}
+	return rc;
+} 
+
+int r82xx_TF_switch(struct r82xx_priv *priv, uint8_t sw){
+	/* Set the RF tracking filter bypass switch */
+	/* 0 - Bypass Tracking Filter  */
+	/* 1 - Tracking Filter: LPF Branch  */
+	/* 2 - Tracking Filter: HPF Branch  */
+	int rc = 0;
+	switch(sw){
+		case 0:
+			rc = r82xx_write_reg_mask(priv, 0x1a, 0b01 << 6, 0xc0); //Bypass
+			break;
+		case 1:
+			rc = r82xx_write_reg_mask(priv, 0x1a, 0b00 << 6, 0xc0); //LPF
+			break;
+		case 2:
+			rc = r82xx_write_reg_mask(priv, 0x1a, 0b10 << 6, 0xc0); //HPF
+			break;
+		default:
+			rc = -1;
+			break;
+	}
+	return rc;
+}
+
+int r82xx_TF_LPF(struct r82xx_priv *priv, uint8_t band ){
+	/* Set Low Pass Filter Corner Settings */
+	/* band: ranges from 0 to 15 (lowest bandwidth to highest) */
+	
+	band  = (band > 0x0F )  ? 0x00 : 0x0F - band;
+	int rc;
+	rc = r82xx_write_reg_mask(priv, 0x1b, band , 0x0F);
+	return rc;
+}
+
+int r82xx_TF_Notch(struct r82xx_priv *priv, uint8_t band ){
+	/* Set Low Pass Filter Corner Settings */
+	/* band: ranges from 0 to 15 (lowest bandwidth to highest) */
+
+	band = (band > 0x0F ) ? 0x00 : 0x0F - band;
+	int rc;
+	rc = r82xx_write_reg_mask(priv, 0x1b, band << 4, 0xF0);
+	return rc;
+}
+
+
+static unsigned int r82xx_mux_range(struct r82xx_priv *priv, int64_t freq){
 	/* Get the proper frequency range */
+
+	unsigned int i;
 	freq = freq / 1000000;
 	for (i = 0; i < ARRAY_SIZE(freq_ranges) - 1; i++) {
 		if (freq < freq_ranges[i + 1].freq)
 			break;
 	}
-	range = &freq_ranges[i];
+	return i;
+}
+
+
+/*
+ * r82xx tuning logic
+ */
+static int r82xx_set_mux(struct r82xx_priv *priv, uint64_t freq)
+{
+	const struct r82xx_freq_range *range;
+	int rc;
+	uint8_t val;
+
+	/* Pre-Defined Frequency Range Settings */
+	range = &freq_ranges[  r82xx_mux_range(priv, freq) ];
 
 	/* Open Drain */
-	rc = r82xx_write_reg_mask(priv, 0x17, range->open_d, 0x08);
+	rc = r82xx_set_open_drain(priv, range->open_d);
 	if (rc < 0)
 		return rc;
 
@@ -1965,6 +2053,7 @@ int r82xx_flip_rtl_sideband(struct r82xx_priv *priv)
 }
 
 
+
 int r82xx_set_freq64(struct r82xx_priv *priv, uint64_t freq)
 {
 	int rc = -1;
@@ -2055,6 +2144,55 @@ int r82xx_set_dither(struct r82xx_priv *priv, int dither)
 {
 	priv->disable_dither = !dither;
 	return 0;
+}
+
+// ########### Custom Frequency Setter #############
+int r82xx_set_freq_only(struct r82xx_priv *priv, uint64_t freq){
+
+	int rc = -1;
+	uint64_t lo_freq;
+
+	/* ignore zero frequency; keep last one */
+	if (!freq)
+		freq = priv->rf_freq;	
+	else
+		priv->rf_freq = freq;
+	
+	// --- Go ahead and try the primary harmonic if freq is below threshold ---
+	if( freq < FIFTH_HARM_FRQ_THRESH_KHZ * (uint64_t)1000 ){
+
+		priv->tuner_pll_set  = 0;
+		priv->tuner_harmonic = 0;
+
+		if ( priv->sideband ^ harm_sideband_xor[priv->tuner_harmonic] )
+			lo_freq = freq - priv->int_freq + priv->if_band_center_freq;
+		else
+			lo_freq = freq + priv->int_freq + priv->if_band_center_freq;
+
+		rc = r82xx_set_pll(priv, lo_freq);
+		if ( rc >= 0 && priv->has_lock){
+			return rc;
+		}
+
+	} 
+
+	// --- Resort to using an another harmonic ---
+	// --- Try first with primary harmonic ---	
+	int harm = (priv->cfg->harmonic <= 0) ? DEFAULT_HARMONIC : priv->cfg->harmonic;
+	priv->tuner_pll_set = 0;
+	priv->tuner_harmonic = harm;
+
+	if ( priv->sideband ^ harm_sideband_xor[priv->tuner_harmonic] )
+		lo_freq = freq - priv->int_freq + priv->if_band_center_freq;
+	else
+		lo_freq = freq + priv->int_freq + priv->if_band_center_freq;
+	lo_freq = lo_freq / harm;
+
+	rc = r82xx_set_pll(priv, lo_freq);
+	if ( rc >= 0 && priv->has_lock )
+		return 0;
+
+	return rc;
 }
 
 

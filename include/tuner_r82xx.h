@@ -178,5 +178,14 @@ int r82xx_read_cache_reg(struct r82xx_priv *priv, int reg);
 int r82xx_write_reg_mask(struct r82xx_priv *priv, uint8_t reg, uint8_t val,uint8_t bit_mask);
 int r82xx_write_reg_mask_ext(struct r82xx_priv *priv, uint8_t reg, uint8_t val, uint8_t bit_mask, const char * func_name);
 
+// --- Custom Methods ---
+int r82xx_set_freq_only(struct r82xx_priv *priv, uint64_t freq );
+int r82xx_set_open_drain(struct r82xx_priv *priv, uint8_t open_d );
+int r82xx_RF_filt_band(struct r82xx_priv *priv, uint8_t band );
+int r82xx_TF_switch(struct r82xx_priv *priv, uint8_t sw );
+int r82xx_TF_LPF(struct r82xx_priv *priv, uint8_t band );
+int r82xx_TF_Notch(struct r82xx_priv *priv, uint8_t band );
+
+
 #endif
 

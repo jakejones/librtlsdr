@@ -599,6 +599,58 @@ int r820t_set_i2c_override(void *dev, unsigned i2c_register, unsigned data, unsi
 }
 
 
+
+// ######### CUSTOM METHODS ############
+int r820t_set_freq_only(rtlsdr_dev_t *dev,  uint64_t freq ){
+	int r;
+	rtlsdr_set_i2c_repeater(dev, 1);
+	r = r82xx_set_freq_only(&dev->r82xx_p, freq);
+	rtlsdr_set_i2c_repeater(dev, 0);
+	return r;
+}
+
+int r820t_set_open_drain(rtlsdr_dev_t *dev, uint8_t open_d ){
+	int r;
+	rtlsdr_set_i2c_repeater(dev, 1);
+	r = r82xx_set_open_drain(&dev->r82xx_p, open_d);
+	rtlsdr_set_i2c_repeater(dev, 0);
+	return r;
+}
+
+int r820t_RF_filt_band(rtlsdr_dev_t *dev, uint8_t band ){
+	int r;
+	rtlsdr_set_i2c_repeater(dev, 1);
+	r = r82xx_RF_filt_band(&dev->r82xx_p, band);
+	rtlsdr_set_i2c_repeater(dev, 0);
+	return r;
+}
+
+int r820t_TF_switch(rtlsdr_dev_t *dev, uint8_t sw ){
+	int r;
+	rtlsdr_set_i2c_repeater(dev, 1);
+	r = r82xx_TF_switch(&dev->r82xx_p, sw);
+	rtlsdr_set_i2c_repeater(dev, 0);
+	return r;
+}
+
+int r820t_TF_LPF(rtlsdr_dev_t *dev, uint8_t freq ){
+	int r;
+	rtlsdr_set_i2c_repeater(dev, 1);
+	r = r82xx_TF_LPF(&dev->r82xx_p, freq);
+	rtlsdr_set_i2c_repeater(dev, 0);
+	return r;
+}
+
+int r820t_TF_Notch(rtlsdr_dev_t *dev, uint8_t freq ){
+	int r;
+	rtlsdr_set_i2c_repeater(dev, 1);
+	r = r82xx_TF_Notch(&dev->r82xx_p, freq);
+	rtlsdr_set_i2c_repeater(dev, 0);
+	return r;
+}
+
+
+
 /* definition order must match enum rtlsdr_tuner */
 static rtlsdr_tuner_iface_t tuners[] = {
 	{
@@ -2073,6 +2125,68 @@ int rtlsdr_set_tuner_i2c_override(rtlsdr_dev_t *dev, unsigned i2c_register, unsi
 		r = dev->tuner->set_i2c_override((void *)dev, i2c_register, data, mask);
 		rtlsdr_set_i2c_repeater(dev, 0);
 	}
+	return r;
+}
+
+
+// ######### CUSTOM TUNER METHODS FOR R820T ############
+int rtlsdr_tuner_set_freq_only(rtlsdr_dev_t *dev,  uint64_t freq ){
+	int r;
+	if( !dev || !dev->tuner )
+		return -1;
+	if( dev->tuner_type != RTLSDR_TUNER_R820T )
+		return -1;
+	r = r820t_set_freq_only(dev, freq);
+	return r;
+}
+
+int rtlsdr_tuner_set_open_drain(rtlsdr_dev_t *dev, uint8_t open_d ){
+	int r;
+	if( !dev || !dev->tuner )
+		return -1;
+	if( dev->tuner_type != RTLSDR_TUNER_R820T )
+		return -1;
+	r = r820t_set_open_drain(dev, open_d);
+	return r;
+}
+
+int rtlsdr_tuner_RF_filt_band(rtlsdr_dev_t *dev, uint8_t band ){
+	int r;
+	if( !dev || !dev->tuner )
+		return -1;
+	if( dev->tuner_type != RTLSDR_TUNER_R820T )
+		return -1;
+	r = r820t_RF_filt_band(dev, band);
+	return r;
+}
+
+int rtlsdr_tuner_TF_switch(rtlsdr_dev_t *dev, uint8_t sw ){
+	int r;
+	if( !dev || !dev->tuner )
+		return -1;
+	if( dev->tuner_type != RTLSDR_TUNER_R820T )
+		return -1;
+	r = r820t_TF_switch(dev, sw);
+	return r;
+}
+
+int rtlsdr_tuner_TF_LPF(rtlsdr_dev_t *dev, uint8_t freq ){
+	int r;
+	if( !dev || !dev->tuner )
+		return -1;
+	if( dev->tuner_type != RTLSDR_TUNER_R820T )
+		return -1;
+	r = r820t_TF_LPF(dev, freq);
+	return r;
+}
+
+int rtlsdr_tuner_TF_Notch(rtlsdr_dev_t *dev, uint8_t freq ){
+	int r;
+	if( !dev || !dev->tuner )
+		return -1;
+	if( dev->tuner_type != RTLSDR_TUNER_R820T )
+		return -1;
+	r = r820t_TF_Notch(dev, freq);
 	return r;
 }
 
