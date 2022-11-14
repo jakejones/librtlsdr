@@ -711,6 +711,12 @@ RTLSDR_API int rtlsdr_tuner_TF_switch(rtlsdr_dev_t *dev, uint8_t sw );
 RTLSDR_API int rtlsdr_tuner_TF_LPF(rtlsdr_dev_t *dev, uint8_t band );
 RTLSDR_API int rtlsdr_tuner_TF_Notch(rtlsdr_dev_t *dev, uint8_t band );
 
+RTLSDR_API int rtlsdr_tuner_imrg_iq(rtlsdr_dev_t *dev, uint8_t val );
+RTLSDR_API int rtlsdr_tuner_imrg(rtlsdr_dev_t *dev, uint8_t val );
+RTLSDR_API int rtlsdr_tuner_imrp_iq(rtlsdr_dev_t *dev, uint8_t val );
+RTLSDR_API int rtlsdr_tuner_imrp(rtlsdr_dev_t *dev, uint8_t val );
+
+
 /*!
  * request version id string to identify source and date of library
  *

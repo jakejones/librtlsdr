@@ -179,6 +179,11 @@ int r82xx_write_reg_mask(struct r82xx_priv *priv, uint8_t reg, uint8_t val,uint8
 int r82xx_write_reg_mask_ext(struct r82xx_priv *priv, uint8_t reg, uint8_t val, uint8_t bit_mask, const char * func_name);
 
 // --- Custom Methods ---
+int r82xx_set_imrg_iq(struct r82xx_priv *priv, uint8_t val );
+int r82xx_set_imrg(struct r82xx_priv *priv, uint8_t val );
+int r82xx_set_imrp_iq(struct r82xx_priv *priv, uint8_t val );
+int r82xx_set_imrp(struct r82xx_priv *priv, uint8_t val );
+
 int r82xx_set_freq_only(struct r82xx_priv *priv, uint64_t freq );
 int r82xx_set_open_drain(struct r82xx_priv *priv, uint8_t open_d );
 int r82xx_RF_filt_band(struct r82xx_priv *priv, uint8_t band );

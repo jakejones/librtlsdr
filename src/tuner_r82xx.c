@@ -705,6 +705,43 @@ static void print_registers(struct r82xx_priv *priv)
 
 // ############### CUSTOM SETTINGS ################
 
+int r82xx_set_imrg_iq(struct r82xx_priv *priv, uint8_t val ){
+
+	int rc = -1;
+	rc = r82xx_write_reg_mask(priv, 0x08, val, 0x20);
+	return rc;
+
+}
+
+int r82xx_set_imrg(struct r82xx_priv *priv, uint8_t val ){
+
+	int rc = -1;
+	rc = r82xx_write_reg_mask(priv, 0x08, val, 0x1F);
+	return rc;
+
+}
+
+int r82xx_set_imrp_iq(struct r82xx_priv *priv, uint8_t val ){
+
+	int rc = -1;
+	rc = r82xx_write_reg_mask(priv, 0x09, val, 0x20);
+	return rc;
+
+}
+
+int r82xx_set_imrp(struct r82xx_priv *priv, uint8_t val ){
+
+	int rc = -1;
+	rc = r82xx_write_reg_mask(priv, 0x09, val, 0x1F);
+	return rc;
+
+}
+
+
+
+
+
+
 int r82xx_set_open_drain(struct r82xx_priv *priv, uint8_t open_d ){
 	/* Open Drain */
 	int rc;

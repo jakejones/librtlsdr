@@ -2156,7 +2156,9 @@ int rtlsdr_tuner_RF_filt_band(rtlsdr_dev_t *dev, uint8_t band ){
 		return -1;
 	if( dev->tuner_type != RTLSDR_TUNER_R820T )
 		return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
 	r = r820t_RF_filt_band(dev, band);
+	rtlsdr_set_i2c_repeater(dev, 0);
 	return r;
 }
 
@@ -2166,7 +2168,9 @@ int rtlsdr_tuner_TF_switch(rtlsdr_dev_t *dev, uint8_t sw ){
 		return -1;
 	if( dev->tuner_type != RTLSDR_TUNER_R820T )
 		return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
 	r = r820t_TF_switch(dev, sw);
+	rtlsdr_set_i2c_repeater(dev, 0);
 	return r;
 }
 
@@ -2176,7 +2180,9 @@ int rtlsdr_tuner_TF_LPF(rtlsdr_dev_t *dev, uint8_t freq ){
 		return -1;
 	if( dev->tuner_type != RTLSDR_TUNER_R820T )
 		return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
 	r = r820t_TF_LPF(dev, freq);
+	rtlsdr_set_i2c_repeater(dev, 0);
 	return r;
 }
 
@@ -2186,9 +2192,64 @@ int rtlsdr_tuner_TF_Notch(rtlsdr_dev_t *dev, uint8_t freq ){
 		return -1;
 	if( dev->tuner_type != RTLSDR_TUNER_R820T )
 		return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
 	r = r820t_TF_Notch(dev, freq);
+	rtlsdr_set_i2c_repeater(dev, 0);
 	return r;
 }
+
+// --- Image Gain/Phase Adjustments ---
+int rtlsdr_tuner_imrg_iq(rtlsdr_dev_t *dev, uint8_t val ){
+        int r;
+        if( !dev || !dev->tuner )
+                return -1;
+        if( dev->tuner_type != RTLSDR_TUNER_R820T )
+                return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
+        r = r82xx_set_imrg_iq(&dev->r82xx_p, val);
+	rtlsdr_set_i2c_repeater(dev, 0);
+        return r;
+}
+
+int rtlsdr_tuner_imrg(rtlsdr_dev_t *dev, uint8_t val ){
+        int r;
+        if( !dev || !dev->tuner )
+                return -1;
+        if( dev->tuner_type != RTLSDR_TUNER_R820T )
+                return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
+        r = r82xx_set_imrg(&dev->r82xx_p, val);
+	rtlsdr_set_i2c_repeater(dev, 0);
+        return r;
+}
+
+int rtlsdr_tuner_imrp_iq(rtlsdr_dev_t *dev, uint8_t val ){
+        int r;
+        if( !dev || !dev->tuner )
+                return -1;
+        if( dev->tuner_type != RTLSDR_TUNER_R820T )
+                return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
+        r = r82xx_set_imrp_iq(&dev->r82xx_p, val);
+	rtlsdr_set_i2c_repeater(dev, 0);
+        return r;
+}
+
+int rtlsdr_tuner_imrp(rtlsdr_dev_t *dev, uint8_t val ){
+        int r;
+        if( !dev || !dev->tuner )
+                return -1;
+        if( dev->tuner_type != RTLSDR_TUNER_R820T )
+                return -1;
+	rtlsdr_set_i2c_repeater(dev, 1);
+        r = r82xx_set_imrp(&dev->r82xx_p, val);
+	rtlsdr_set_i2c_repeater(dev, 0);
+        return r;
+}
+
+
+
+
 
 
 int rtlsdr_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate)
